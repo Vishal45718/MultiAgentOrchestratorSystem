@@ -1,0 +1,226 @@
+Metadata-Version: 2.4
+Name: multi-agent-orchestration-system
+Version: 0.1.0
+Summary: Multi-Agent Orchestration System with LangGraph
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+
+# Architecture — Multi-Agent Orchestration System
+
+## 1. Purpose / Use Case
+A production-oriented platform that accepts a task (support ticket, research query,
+operational request), routes it through a graph of specialized LLM agents that plan,
+retrieve context, call tools, and self-critique, then either finalizes a result or
+escalates to a human. Demonstrates: durable state, async execution, memory tiers,
+HITL, retries, observability, and evaluation — not a single-turn chatbot.
+
+## 2. Components & Responsibilities
+
+| Component | Responsibility |
+|---|---|
+| **FastAPI** | External API: submit tasks, poll/stream status, HITL decisions, health/metrics endpoints. No business logic. |
+| **LangGraph Orchestrator** | Defines the agent state graph, edges, conditional routing, and checkpointing. |
+| **Agents** | Router, Researcher, Executor, Critic, Escalation (see §3). |
+| **Tool Layer** | Registry of callable tools with JSON-schema contracts, adapters for OpenAI + Anthropic tool-calling formats. |
+| **PostgreSQL** | System of record: tasks, runs, messages, tool calls, HITL requests, users, audit log, eval results. |
+| **ChromaDB** | Semantic memory: knowledge-base RAG + similarity search over past resolved tasks. |
+| **Redis** | Celery broker/result backend, run-state cache, pub/sub for live status. |
+| **Celery** | Async execution of graph runs, retries with backoff, scheduled eval jobs. |
+| **Streamlit** | Operator UI: submit tasks, monitor runs, HITL review queue. |
+| **Observability** | Structured logs, tracing, metrics — cross-cutting, not a separate service. |
+| **Evaluation Harness** | Offline eval sets + scorers run against agent outputs, tracked over time. |
+
+## 3. Agent Roles
+
+- **Router/Planner** — classifies the incoming task, selects a plan/path through the graph.
+- **Researcher** — retrieves context via ChromaDB RAG and/or web-search tool.
+- **Executor** — calls tools/functions to perform the requested action.
+- **Critic/Evaluator** — scores output confidence/risk; decides finalize vs. escalate vs. retry.
+- **Escalation** — packages context, opens a HITL request, resumes graph on human decision.
+
+## 4. Tool System
+- Central registry (`src/tools/registry.py`): one JSON schema per tool, versioned.
+- Adapter layer translates the schema into OpenAI function-calling and Anthropic
+  tool-use formats — agents are model-agnostic.
+- Every tool call is timeout-bound, retried on transient failure, and logged to
+  Postgres (`tool_calls` table) for audit and eval.
+
+## 5. Memory Design
+
+| Tier | Store | Lifetime | Contents |
+|---|---|---|---|
+| Working memory | LangGraph state + Redis | Single run | Current graph state, checkpoints |
+| Episodic memory | PostgreSQL | Durable | Full task/message/tool-call history per user/task |
+| Semantic memory | ChromaDB | Durable | Embedded KB docs + embedded past resolutions for RAG |
+
+## 6. Postgres vs ChromaDB vs Redis
+- **PostgreSQL** — source of truth. Anything that must be durable, queryable,
+  auditable, or joined relationally lives here.
+- **ChromaDB** — retrieval only. Never authoritative; rebuildable from Postgres/KB source docs.
+- **Redis** — ephemeral. Celery queue/results, checkpoint cache, rate limits, pub/sub.
+  Nothing here is the only copy of anything important.
+
+## 7. HITL Flow
+1. Critic agent flags low confidence or high-risk action.
+2. A `hitl_requests` row is created; task status → `PENDING_HUMAN`.
+3. Streamlit HITL queue surfaces it; human approves, edits, or rejects.
+4. FastAPI HITL endpoint records the decision.
+5. Celery resumes the LangGraph run from its checkpoint with the human decision injected as state.
+
+## 8. Retry / Failure Handling
+- Celery task-level retries with exponential backoff for LLM and tool calls.
+- LangGraph checkpointing allows resume-from-last-good-state instead of restart.
+- Circuit breaker: N consecutive tool/LLM failures → auto-escalate to HITL instead of looping.
+- Exhausted retries → task moves to `FAILED`, written to Postgres audit log +
+  `planning/BUG_TRACKER.md` if it indicates a code defect.
+
+## 9. Async Celery Flow
+1. FastAPI receives request → writes `tasks` row (status `QUEUED`) in Postgres.
+2. Enqueues a Celery task with the task ID.
+3. Worker loads state, runs the LangGraph graph.
+4. Each node transition updates Postgres status + publishes to Redis pub/sub.
+5. On completion or escalation, status is updated; clients poll or receive SSE push.
+
+## 10. Diagrams
+
+### 10.1 Component Architecture
+```mermaid
+flowchart LR
+    UI[Streamlit UI] --> API[FastAPI]
+    API --> PG[(PostgreSQL)]
+    API --> Q[Celery Task Queue]
+    Q --> R[(Redis)]
+    Q --> W[Celery Worker]
+    W --> LG[LangGraph Orchestrator]
+    LG --> Router[Router Agent]
+    LG --> Researcher[Researcher Agent]
+    LG --> Executor[Executor Agent]
+    LG --> Critic[Critic Agent]
+    LG --> Escalation[Escalation Agent]
+    Researcher --> Chroma[(ChromaDB)]
+    Executor --> Tools[Tool Registry]
+    Tools --> ExtAPIs[External APIs / OpenAI / Anthropic]
+    LG --> PG
+    LG --> R
+    Escalation --> PG
+    UI --> PG
+    Obs[Observability: logs/traces/metrics] -.-> LG
+    Obs -.-> API
+    Obs -.-> W
+```
+
+### 10.2 HITL Sequence
+```mermaid
+sequenceDiagram
+    participant C as Critic Agent
+    participant PG as PostgreSQL
+    participant UI as Streamlit
+    participant H as Human
+    participant API as FastAPI
+    participant CW as Celery Worker
+
+    C->>PG: create hitl_request, task=PENDING_HUMAN
+    UI->>PG: poll HITL queue
+    PG-->>UI: pending requests
+    H->>UI: review + decide
+    UI->>API: POST /hitl/{id}/decision
+    API->>PG: store decision, task=RESUMING
+    API->>CW: enqueue resume task
+    CW->>PG: load checkpoint + decision
+    CW->>CW: resume LangGraph from checkpoint
+    CW->>PG: update final status
+```
+
+## 11. Repository Structure
+
+```text
+.
+├── AGENTS.md
+├── docker-compose.yml
+├── Dockerfile
+├── .env.example
+├── pyproject.toml
+├── src/
+│   ├── api/
+│   │   ├── main.py
+│   │   ├── routes/
+│   │   │   ├── tasks.py
+│   │   │   ├── hitl.py
+│   │   │   └── health.py
+│   │   ├── schemas/
+│   │   └── deps.py
+│   ├── agents/
+│   │   ├── router_agent.py
+│   │   ├── researcher_agent.py
+│   │   ├── executor_agent.py
+│   │   ├── critic_agent.py
+│   │   └── escalation_agent.py
+│   ├── graph/
+│   │   ├── build_graph.py
+│   │   ├── state.py
+│   │   └── checkpointer.py
+│   ├── tools/
+│   │   ├── registry.py
+│   │   ├── schemas/
+│   │   ├── web_search_tool.py
+│   │   ├── kb_retrieval_tool.py
+│   │   └── internal_api_tool.py
+│   ├── llm/
+│   │   ├── openai_client.py
+│   │   ├── anthropic_client.py
+│   │   └── router.py
+│   ├── memory/
+│   │   ├── short_term.py
+│   │   ├── episodic_store.py
+│   │   └── semantic_store.py
+│   ├── db/
+│   │   ├── models.py
+│   │   ├── session.py
+│   │   └── repositories/
+│   ├── celery_app/
+│   │   ├── worker.py
+│   │   ├── tasks.py
+│   │   └── celery_config.py
+│   ├── observability/
+│   │   ├── logging_config.py
+│   │   ├── tracing.py
+│   │   └── metrics.py
+│   ├── evaluation/
+│   │   ├── eval_runner.py
+│   │   ├── datasets/
+│   │   └── scorers.py
+│   └── config.py
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   ├── e2e/
+│   └── conftest.py
+├── docs/
+│   ├── ARCHITECTURE.md
+│   └── PHASES.md
+├── planning/
+│   ├── MASTER_PLAN.md
+│   ├── TASK_TRACKER.md
+│   ├── CURRENT_PHASE.md
+│   ├── BUG_TRACKER.md
+│   ├── DECISION_LOG.md
+│   ├── TEST_STATUS.md
+│   └── SESSION_LOG.md
+├── migrations/
+│   └── versions/
+├── scripts/
+│   ├── init_db.sh
+│   ├── seed_kb.py
+│   └── run_eval.sh
+└── frontend/
+    └── streamlit_app/
+        ├── app.py
+        ├── pages/
+        │   ├── submit_task.py
+        │   ├── task_status.py
+        │   └── hitl_queue.py
+        └── components/
+```
