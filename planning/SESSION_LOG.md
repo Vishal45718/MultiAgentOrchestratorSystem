@@ -67,3 +67,12 @@ Tests run: `pytest -v` (passed, 19 tests passed), `ruff check .` (passed), `ruff
 Blockers: None.
 Next session should start with: P2-T2 (Alembic init + first migration)
 
+
+---
+### Session 7 — 2026-09-16
+Phase: 2
+Tasks worked: P2-T2
+Changes made: Added alembic>=1.13.0 to project dependencies and psycopg2-binary>=2.9.0 to dev extras in pyproject.toml. Recorded D007 in DECISION_LOG.md. Created alembic.ini (credential-free, URL is placeholder), migrations/env.py (reads settings.sync_database_url at runtime, wires Base.metadata for autogenerate), migrations/script.py.mako, and migrations/README. Generated initial migration (revision 0d3874d878b2_initial_schema.py) via alembic autogenerate against live Postgres 15 container. Manually verified all 8 tables, FKs, cascade rules, enum columns, JSONB columns, and 48 indexes are correctly represented. Applied ruff --fix and ruff format to migration file; added per-file-ignores E501 for migrations/versions/*.py in pyproject.toml. Applied migration (upgrade head), verified all 9 tables in DB, tested downgrade to base (all tables removed cleanly), re-applied upgrade head. Marked P2-T2 DONE.
+Tests run: pytest -v (19 passed), ruff check . (passed), ruff format --check . (passed), alembic upgrade head (applied cleanly), alembic downgrade base (rolled back cleanly), alembic upgrade head (re-applied).
+Blockers: None.
+Next session should start with: P2-T3 (Repository layer / CRUD)

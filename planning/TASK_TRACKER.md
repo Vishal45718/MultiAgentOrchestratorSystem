@@ -10,7 +10,7 @@ Statuses: `TODO / IN_PROGRESS / BLOCKED / DONE / NEEDS_REVIEW`
 | P1-T4 | .env.example + config.py | DONE | P1-T1 | Config loads from env in a test |
 | P1-T5 | Init planning/ files + AGENTS.md | DONE | — | All planning files present and non-empty |
 | P2-T1 | SQLAlchemy models | DONE | P1-T3 | Models import without error |
-| P2-T2 | Alembic init + first migration | TODO | P2-T1 | Migration applies to fresh DB |
+| P2-T2 | Alembic init + first migration | DONE | P2-T1 | Migration applies to fresh DB |
 | P2-T3 | Repository layer (CRUD) | TODO | P2-T2 | CRUD integration tests pass |
 | P2-T4 | scripts/init_db.sh | TODO | P2-T2 | Script provisions DB from clean state |
 | P3-T1 | Tool registry | TODO | P1-T2 | Register/list/validate covered by tests |
