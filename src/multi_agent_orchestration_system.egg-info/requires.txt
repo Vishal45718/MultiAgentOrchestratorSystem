@@ -1,4 +1,9 @@
+pydantic-settings>=2.0.0
+sqlalchemy>=2.0.0
+alembic>=1.13.0
 
 [dev]
 pytest
 ruff
+psycopg2-binary>=2.9.0
+jsonschema>=4.20.0

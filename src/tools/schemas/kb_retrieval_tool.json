@@ -1,0 +1,21 @@
+{
+  "name": "kb_retrieval_tool",
+  "description": "Retrieve relevant documents from the internal knowledge base based on a semantic query.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "The search query to find relevant documents in the knowledge base."
+      },
+      "top_k": {
+        "type": "integer",
+        "description": "The maximum number of documents to retrieve.",
+        "default": 5,
+        "minimum": 1
+      }
+    },
+    "required": ["query"],
+    "additionalProperties": false
+  }
+}

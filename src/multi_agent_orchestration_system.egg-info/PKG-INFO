@@ -4,9 +4,14 @@ Version: 0.1.0
 Summary: Multi-Agent Orchestration System with LangGraph
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
+Requires-Dist: pydantic-settings>=2.0.0
+Requires-Dist: sqlalchemy>=2.0.0
+Requires-Dist: alembic>=1.13.0
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
 Requires-Dist: ruff; extra == "dev"
+Requires-Dist: psycopg2-binary>=2.9.0; extra == "dev"
+Requires-Dist: jsonschema>=4.20.0; extra == "dev"
 
 # Architecture — Multi-Agent Orchestration System
 

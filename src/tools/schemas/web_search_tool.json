@@ -1,0 +1,15 @@
+{
+  "name": "web_search_tool",
+  "description": "Search the public web for current information, news, or facts not available in the internal knowledge base.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "The search query to execute on the web."
+      }
+    },
+    "required": ["query"],
+    "additionalProperties": false
+  }
+}

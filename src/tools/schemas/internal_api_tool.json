@@ -1,0 +1,26 @@
+{
+  "name": "internal_api_tool",
+  "description": "Call an internal system API to perform operational actions or retrieve live internal data.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "endpoint": {
+        "type": "string",
+        "description": "The specific internal API endpoint to call (e.g., '/users/123')."
+      },
+      "method": {
+        "type": "string",
+        "description": "The HTTP method to use.",
+        "enum": ["GET", "POST", "PUT", "DELETE"],
+        "default": "GET"
+      },
+      "payload": {
+        "type": "object",
+        "description": "The JSON payload to send with the request (for POST/PUT).",
+        "additionalProperties": true
+      }
+    },
+    "required": ["endpoint"],
+    "additionalProperties": false
+  }
+}

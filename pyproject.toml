@@ -19,6 +19,7 @@ dev = [
     "pytest",
     "ruff",
     "psycopg2-binary>=2.9.0",
+    "jsonschema>=4.20.0",
 ]
 
 [tool.pytest.ini_options]
@@ -30,6 +31,13 @@ testpaths = [
 pythonpath = [
     ".",
 ]
+filterwarnings = [
+    # SQLAlchemy emits this when a nested transaction is rolled back after an
+    # IntegrityError invalidates the outer connection transaction.  This is
+    # expected and harmless in the rollback-based test isolation pattern.
+    "ignore:transaction already deassociated from connection:sqlalchemy.exc.SAWarning",
+]
+
 
 [tool.ruff]
 line-length = 88

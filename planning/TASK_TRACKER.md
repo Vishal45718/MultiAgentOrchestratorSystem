@@ -11,12 +11,12 @@ Statuses: `TODO / IN_PROGRESS / BLOCKED / DONE / NEEDS_REVIEW`
 | P1-T5 | Init planning/ files + AGENTS.md | DONE | — | All planning files present and non-empty |
 | P2-T1 | SQLAlchemy models | DONE | P1-T3 | Models import without error |
 | P2-T2 | Alembic init + first migration | DONE | P2-T1 | Migration applies to fresh DB |
-| P2-T3 | Repository layer (CRUD) | TODO | P2-T2 | CRUD integration tests pass |
-| P2-T4 | scripts/init_db.sh | TODO | P2-T2 | Script provisions DB from clean state |
-| P3-T1 | Tool registry | TODO | P1-T2 | Register/list/validate covered by tests |
-| P3-T2 | Tool JSON schemas | TODO | P3-T1 | Each tool has a valid schema file |
-| P3-T3 | OpenAI function-calling adapter | TODO | P3-T1 | Adapter unit tests pass |
-| P3-T4 | Anthropic tool-use adapter | TODO | P3-T1 | Adapter unit tests pass |
+| P2-T3 | Repository layer (CRUD) | DONE | P2-T2 | CRUD integration tests pass |
+| P2-T4 | scripts/init_db.sh | DONE | P2-T2 | Script provisions DB from clean state |
+| P3-T1 | Tool registry | DONE | P1-T2 | Register/list/validate covered by tests |
+| P3-T2 | Tool JSON schemas | DONE | P3-T1 | Each tool has a valid schema file |
+| P3-T3 | OpenAI function-calling adapter | DONE | P3-T1 | Adapter unit tests pass |
+| P3-T4 | Anthropic tool-use adapter | DONE | P3-T1 | Adapter unit tests pass |
 | P3-T5 | KB retrieval + mock tool | TODO | P3-T2 | Both tools callable via registry |
 | P4-T1 | Graph state definition | TODO | P2-T1 | Typed state passes mypy/tests |
 | P4-T2 | Router+Executor graph | TODO | P3-T5, P4-T1 | Synchronous run produces stored result |

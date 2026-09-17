@@ -24,6 +24,15 @@ src/db/__init__.py
 src/db/models.py
 src/db/session.py
 src/db/repositories/__init__.py
+src/db/repositories/audit_log.py
+src/db/repositories/base.py
+src/db/repositories/eval_result.py
+src/db/repositories/hitl_request.py
+src/db/repositories/message.py
+src/db/repositories/run.py
+src/db/repositories/task.py
+src/db/repositories/tool_call.py
+src/db/repositories/user.py
 src/evaluation/__init__.py
 src/evaluation/eval_runner.py
 src/evaluation/scorers.py
