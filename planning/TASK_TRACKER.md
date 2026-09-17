@@ -17,7 +17,7 @@ Statuses: `TODO / IN_PROGRESS / BLOCKED / DONE / NEEDS_REVIEW`
 | P3-T2 | Tool JSON schemas | DONE | P3-T1 | Each tool has a valid schema file |
 | P3-T3 | OpenAI function-calling adapter | DONE | P3-T1 | Adapter unit tests pass |
 | P3-T4 | Anthropic tool-use adapter | DONE | P3-T1 | Adapter unit tests pass |
-| P3-T5 | KB retrieval + mock tool | TODO | P3-T2 | Both tools callable via registry |
+| P3-T5 | KB retrieval + mock tool | DONE | P3-T2 | Both tools callable via registry |
 | P4-T1 | Graph state definition | TODO | P2-T1 | Typed state passes mypy/tests |
 | P4-T2 | Router+Executor graph | TODO | P3-T5, P4-T1 | Synchronous run produces stored result |
 | P4-T3 | Redis checkpointer | TODO | P4-T2 | Resume-after-crash test passes |

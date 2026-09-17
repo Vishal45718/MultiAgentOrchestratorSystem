@@ -1,0 +1,21 @@
+{
+  "name": "mock_tool",
+  "description": "A deterministic mock tool for testing tool registration and execution pipelines.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "input_text": {
+        "type": "string",
+        "description": "Input text to process."
+      },
+      "repeat": {
+        "type": "integer",
+        "description": "Number of times to repeat the text.",
+        "default": 1,
+        "minimum": 1
+      }
+    },
+    "required": ["input_text"],
+    "additionalProperties": false
+  }
+}

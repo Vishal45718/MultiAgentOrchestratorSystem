@@ -1,8 +1,8 @@
 # Current Phase
 
 **Phase:** 3 — Tool System
-**Status:** IN_PROGRESS
-**Active tasks:** P3-T5
+**Status:** DONE
+**Active tasks:** None (Phase 3 complete; ready for Phase 4)
 
 **Entry condition:** Phase 2 complete (migrations and repositories tested).
 **Exit condition:** Same tool schema produces valid call payloads for both providers; unit tests per adapter pass; schema validation rejects malformed calls.

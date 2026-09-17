@@ -23,8 +23,8 @@ Auth, secrets, hardened Docker build, load testing, runbook.
 | Phase | Name | Status |
 |---|---|---|
 | 1 | Foundations & Scaffolding | DONE |
-| 2 | Data Layer (PostgreSQL) | TODO |
-| 3 | Tool System | TODO |
+| 2 | Data Layer (PostgreSQL) | DONE |
+| 3 | Tool System | DONE |
 | 4 | Single-Agent LangGraph Flow | TODO |
 | 5 | Multi-Agent Graph & Semantic Memory | TODO |
 | 6 | Async Execution (Celery) | TODO |

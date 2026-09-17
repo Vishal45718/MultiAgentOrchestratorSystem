@@ -131,3 +131,12 @@ Changes made: Implemented pure Anthropic tool-use adapter in src/tools/anthropic
 Tests run: pytest (164 passed), ruff check . (passed), ruff format --check . (passed).
 Blockers: None.
 Next session should start with: P3-T5 (KB retrieval + mock tool)
+
+---
+### Session 14 — 2026-09-17
+Phase: 3
+Tasks worked: P3-T5
+Changes made: Created canonical JSON schema for mock_tool in src/tools/schemas/mock_tool.json. Implemented pluggable KB retrieval tool in src/tools/kb_retrieval_tool.py with KBBackend Protocol and InMemoryKBBackend default implementation. Implemented deterministic mock tool in src/tools/mock_tool.py. Created stateless registry loader in src/tools/loader.py (create_default_tool_registry, load_tool_definition) loading canonical schemas from disk and constructing ToolDefinitions paired with validated callables. Re-exported tools and loader in src/tools/__init__.py. Logged architectural decision D014 in DECISION_LOG.md. Created comprehensive unit test suite in tests/unit/test_kb_and_mock_tools.py covering queries, default/explicit top_k, deterministic execution, empty/no-match behavior, invalid inputs, structured result shape, registry retrieval and execution, and compatibility with OpenAI and Anthropic adapters. Marked P3-T5 DONE in TASK_TRACKER.md and marked Phase 3 DONE in MASTER_PLAN.md and CURRENT_PHASE.md.
+Tests run: pytest (189 passed), ruff check . (passed), ruff format --check . (passed).
+Blockers: None.
+Next session should start with: P4-T1 (Graph state definition)
